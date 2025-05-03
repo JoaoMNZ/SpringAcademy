@@ -22,52 +22,51 @@ public class CashCardJSONTest {
     @BeforeEach
     void setUp() {
         cashCards = Arrays.array(
-                new CashCard(99L, 123.45),
-                new CashCard(100L, 1.00),
-                new CashCard(101L, 150.00));
+                new CashCard(99L, 123.45, "sarah1"),
+                new CashCard(100L, 1.00, "sarah1"),
+                new CashCard(101L, 150.00, "sarah1"));
     }
 
     @Test
     public void cashCardSerializationTest() throws IOException {
-        CashCard cashCard = new CashCard(1L, 123.45);
-        JsonContent<CashCard> serialized = json.write(cashCard);
-        assertThat(serialized).isStrictlyEqualToJson("single.json");
-        assertThat(serialized).hasJsonPathNumberValue("@.id");
-        assertThat(serialized).extractingJsonPathNumberValue("@.id").isEqualTo(1);
-        assertThat(serialized).hasJsonPathNumberValue("@.amount");
-        assertThat(serialized).extractingJsonPathNumberValue("@.amount").isEqualTo(123.45);
+        CashCard cashCard = cashCards[0];
+        assertThat(json.write(cashCard)).isStrictlyEqualToJson("single.json");
+        assertThat(json.write(cashCard)).hasJsonPathNumberValue("@.id");
+        assertThat(json.write(cashCard)).extractingJsonPathNumberValue("@.id").isEqualTo(99);
+        assertThat(json.write(cashCard)).hasJsonPathNumberValue("@.amount");
+        assertThat(json.write(cashCard)).extractingJsonPathNumberValue("@.amount").isEqualTo(123.45);
+        assertThat(json.write(cashCard)).extractingJsonPathStringValue("@.owner").isEqualTo("sarah1");
     }
     @Test
     public void cashCardDeserializationTest() throws IOException{
-        CashCard cashCard = new CashCard(1L, 123.45);
         String expected = """
-        {
-            "id": 1,
-            "amount": 123.45
-        }
-        """;
-        ObjectContent<CashCard> deserialized = json.parse(expected);
-        assertThat(deserialized).isEqualTo(cashCard);
-        assertThat(deserialized.getObject().id()).isEqualTo(1);
-        assertThat(deserialized.getObject().amount()).isEqualTo(123.45);
+                {
+                  "id": 99,
+                  "amount": 123.45,
+                  "owner": "sarah1"
+                }
+                """;
+        assertThat(json.parse(expected)).isEqualTo(cashCards[0]);
+        assertThat(json.parseObject(expected).id()).isEqualTo(99L);
+        assertThat(json.parseObject(expected).amount()).isEqualTo(123.45);
+        assertThat(json.parseObject(expected).owner()).isEqualTo("sarah1");
     }
 
     @Test
     void cashCardListSerializationTest() throws IOException {
         JsonContent<CashCard[]> serialized = jsonList.write(cashCards);
         assertThat(serialized).isStrictlyEqualToJson("list.json");
-
     }
 
     @Test
     void cashCardListDeserializationTest() throws IOException {
         String expected = """
-         [
-            { "id": 99, "amount": 123.45 },
-            { "id": 100, "amount": 1.00 },
-            { "id": 101, "amount": 150.00 }
-         ]
-         """;
+                [
+                  {"id": 99, "amount": 123.45 , "owner": "sarah1"},
+                  {"id": 100, "amount": 1.00 , "owner": "sarah1"},
+                  {"id": 101, "amount": 150.00, "owner": "sarah1" }
+                ]
+                """;
         ObjectContent<CashCard[]> deserialized = jsonList.parse(expected);
         assertThat(deserialized).isEqualTo(cashCards);
     }
